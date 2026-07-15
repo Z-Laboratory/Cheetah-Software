@@ -1,3 +1,4 @@
+#include <time.h>
 /*! @file SharedMemory.h
  *  @brief Shared memory utilities for connecting the simulator program to the
  * robot program

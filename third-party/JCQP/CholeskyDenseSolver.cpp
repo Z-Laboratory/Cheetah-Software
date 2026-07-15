@@ -8,7 +8,8 @@
 #include "Timer.h"
 #include <cassert>
 #include <iostream>
-#include <immintrin.h>
+#define SIMDE_ENABLE_NATIVE_ALIASES
+#include <simde/x86/avx2.h>
 
 static constexpr s64 UNROLL_MATVEC = 8; //! Loop unroll for all inner loops, AVX2 only
 
