@@ -99,6 +99,9 @@
             <property name="text">
              <string>Mini Cheetah</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
@@ -117,6 +120,9 @@
            <widget class="QRadioButton" name="simulatorButton">
             <property name="text">
              <string>Simulator</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
