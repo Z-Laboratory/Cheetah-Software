@@ -16,7 +16,8 @@
 
 #include <string>
 #include <lcm-cpp.hpp>
-#include <lord_imu/LordImu.h>
+//#include <lord_imu/LordImu.h>
+#include <imx_imu/ImxImu.h>
 
 #include "RobotRunner.h"
 #include "Utilities/PeriodicTask.h"
@@ -93,19 +94,25 @@ class MiniCheetahHardwareBridge : public HardwareBridge {
   void runSpi();
   void initHardware();
   void run();
-  void runMicrostrain();
-  void logMicrostrain();
+  //void runMicrostrain();
+  //void logMicrostrain();
+  void runImx();
   void abort(const std::string& reason);
   void abort(const char* reason);
 
  private:
   VectorNavData _vectorNavData;
   lcm::LCM _spiLcm;
-  lcm::LCM _microstrainLcm;
-  std::thread _microstrainThread;
-  LordImu _microstrainImu;
-  microstrain_lcmt _microstrainData;
-  bool _microstrainInit = false;
+  //lcm::LCM _microstrainLcm;
+  //std::thread _microstrainThread;
+  //LordImu _microstrainImu;
+  //microstrain_lcmt _microstrainData;
+  //bool _microstrainInit = false;
+
+  std::thread _imxThread;
+  ImxImu _imxImu;
+  bool _imxInit = false;
+
   bool _load_parameters_from_file;
 };
 

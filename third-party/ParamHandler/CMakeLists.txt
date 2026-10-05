@@ -7,7 +7,7 @@ set(GCC_EXTRA_OPTIONS "${GCC_EXTRA_OPTIONS} -fPIC")
 	#cmake_policy(SET CMP0015 OLD)
 #endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+# set(CMAKE_CXX_FLAGS "-std=c++11")
 include(CheckCXXCompilerFlag)
 
 set(YAML_CPP_VERSION_MAJOR "0")

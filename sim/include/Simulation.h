@@ -19,6 +19,7 @@
 #include "SimUtilities/ti_boardcontrol.h"
 #include "Utilities/SharedMemory.h"
 #include "Utilities/Timer.h"
+#include "ImxImu.h"
 
 #include <mutex>
 #include <queue>
@@ -124,6 +125,8 @@ class Simulation {
   std::mutex _robotMutex;
   SharedMemoryObject<SimulatorSyncronizedMessage> _sharedMemory;
   ImuSimulator<double>* _imuSimulator = nullptr;
+  ImxImu _imxImu;
+  bool _imxInit = false;
   SimulatorControlParameters& _simParams;
   ControlParameters& _userParams;
   RobotControlParameters _robotParams;

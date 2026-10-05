@@ -224,7 +224,7 @@ void HardwareBridge::handleControlParameter(
 
 
 MiniCheetahHardwareBridge::MiniCheetahHardwareBridge(RobotController* robot_ctrl, bool load_parameters_from_file)
-    : HardwareBridge(robot_ctrl), _spiLcm(getLcmUrl(255)), _microstrainLcm(getLcmUrl(255)) {
+    : HardwareBridge(robot_ctrl), _spiLcm(getLcmUrl(255)) {
   _load_parameters_from_file = load_parameters_from_file;
 }
 
@@ -312,8 +312,12 @@ void MiniCheetahHardwareBridge::run() {
   spiTask.start();
 
   // microstrain
-  if(_microstrainInit)
-    _microstrainThread = std::thread(&MiniCheetahHardwareBridge::runMicrostrain, this);
+  //if(_microstrainInit)
+   // _microstrainThread = std::thread(&MiniCheetahHardwareBridge::runMicrostrain, this);
+
+  // IMX
+  if (_imxInit)
+    _imxThread = std::thread(&MiniCheetahHardwareBridge::runImx, this);
 
   // robot controller start
   _robotRunner->start();
@@ -331,9 +335,9 @@ void MiniCheetahHardwareBridge::run() {
   sbusTask.start();
 
   // temporary hack: microstrain logger
-  PeriodicMemberFunction<MiniCheetahHardwareBridge> microstrainLogger(
-      &taskManager, .001, "microstrain-logger", &MiniCheetahHardwareBridge::logMicrostrain, this);
-  microstrainLogger.start();
+  //PeriodicMemberFunction<MiniCheetahHardwareBridge> microstrainLogger(
+   //   &taskManager, .001, "microstrain-logger", &MiniCheetahHardwareBridge::logMicrostrain, this);
+  //microstrainLogger.start();
 
   for (;;) {
     usleep(1000000);
@@ -353,7 +357,7 @@ void HardwareBridge::run_sbus() {
   }
 }
 
-void MiniCheetahHardwareBridge::runMicrostrain() {
+/*void MiniCheetahHardwareBridge::runMicrostrain() {
   while(true) {
     _microstrainImu.run();
 
@@ -373,12 +377,31 @@ void MiniCheetahHardwareBridge::runMicrostrain() {
 void MiniCheetahHardwareBridge::logMicrostrain() {
   _microstrainImu.updateLCM(&_microstrainData);
   _microstrainLcm.publish("microstrain", &_microstrainData);
+}*/
+
+void MiniCheetahHardwareBridge::runImx() {
+  while (true) {
+    _imxImu.run();
+
+    _vectorNavData.accelerometer = _imxImu.acc;
+    _vectorNavData.gyro = _imxImu.gyro;
+
+    // ImxImu stores qn2b in IMX/native order:
+    // [w, x, y, z]
+    //
+    // VectorNavData expects:
+    // [x, y, z, w]
+    _vectorNavData.quat[0] = _imxImu.quat[1];
+    _vectorNavData.quat[1] = _imxImu.quat[2];
+    _vectorNavData.quat[2] = _imxImu.quat[3];
+    _vectorNavData.quat[3] = _imxImu.quat[0];
+  }
 }
 
 /*!
  * Initialize Mini Cheetah specific hardware
  */
-void MiniCheetahHardwareBridge::initHardware() {
+/*void MiniCheetahHardwareBridge::initHardware() {
   _vectorNavData.quat << 1, 0, 0, 0;
 #ifndef USE_MICROSTRAIN
   printf("[MiniCheetahHardware] Init vectornav\n");
@@ -390,6 +413,22 @@ void MiniCheetahHardwareBridge::initHardware() {
 
   init_spi();
   _microstrainInit = _microstrainImu.tryInit(0, 921600);
+}*/
+
+void MiniCheetahHardwareBridge::initHardware() {
+  // VectorNavData stores quaternion as [x, y, z, w].
+  // Identity quaternion is therefore [0, 0, 0, 1].
+  _vectorNavData.quat << 0, 0, 0, 1;
+
+  init_spi();
+
+  printf("[MiniCheetahHardware] Init IMX\n");
+
+  _imxInit = _imxImu.tryInit("/dev/ttyACM0");
+
+  if (!_imxInit) {
+    printf("[MiniCheetahHardware] IMX failed to initialize\n");
+  }
 }
 
 void Cheetah3HardwareBridge::initHardware() {

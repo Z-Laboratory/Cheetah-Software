@@ -209,6 +209,16 @@ Simulation::Simulation(RobotType robot, Graphics3D* window,
   printf("[Simulation] Setup IMU simulator...\n");
   _imuSimulator = new ImuSimulator<double>(_simParams);
 
+  printf("[Simulation] Initializing physical IMX...\n");
+
+  _imxInit = _imxImu.tryInit("/dev/ttyACM0");
+
+  if (_imxInit) {
+    printf("[Simulation] Physical IMX connected\n");
+  } else {
+    printf("[Simulation] Physical IMX failed to connect\n");
+  }
+
   _simParams.unlockMutex();
   printf("[Simulation] Ready!\n");
 }
@@ -426,9 +436,30 @@ void Simulation::highLevelControl() {
                                     _simulator->getDState(),
                                     _sharedMemory().simToRobot.cheaterState);
 
-  _imuSimulator->updateVectornav(_simulator->getState(),
+  /*_imuSimulator->updateVectornav(_simulator->getState(),
                                    _simulator->getDState(),
-                                   &_sharedMemory().simToRobot.vectorNav);
+                                   &_sharedMemory().simToRobot.vectorNav);*/
+
+  if (_imxInit) {
+    _imxImu.run();
+
+    auto& vn = _sharedMemory().simToRobot.vectorNav;
+
+    vn.accelerometer = _imxImu.acc;
+    vn.gyro = _imxImu.gyro;
+
+    // ImxImu [w,x,y,z] -> VectorNavData [x,y,z,w]
+    vn.quat[0] = _imxImu.quat[1];
+    vn.quat[1] = _imxImu.quat[2];
+    vn.quat[2] = _imxImu.quat[3];
+    vn.quat[3] = _imxImu.quat[0];
+
+  } else {
+    // Fall back to simulated IMU if the physical IMX isn't connected.
+    _imuSimulator->updateVectornav(_simulator->getState(),
+                                  _simulator->getDState(),
+                                  &_sharedMemory().simToRobot.vectorNav);
+  }
 
 
   // send leg data to robot
