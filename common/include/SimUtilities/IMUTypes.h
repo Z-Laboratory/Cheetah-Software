@@ -6,6 +6,7 @@
 #define PROJECT_IMUTYPES_H
 
 #include "cppTypes.h"
+//#include <cstdint>
 
 /*!
  * Mini Cheetah's IMU
@@ -14,6 +15,15 @@ struct VectorNavData {
   Vec3<float> accelerometer;
   Vec3<float> gyro;
   Quat<float> quat;
+
+  /*
+  // P5 IMU timing instrumentation.
+  uint64_t imuTimestampNs = 0;
+  uint64_t insTimestampNs = 0;
+  uint64_t imuSequence = 0;
+  uint64_t insSequence = 0;
+  */
+
   // todo is there status for the vectornav?
 };
 

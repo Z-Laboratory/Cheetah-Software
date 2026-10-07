@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <exception>
 #include <memory>
+#include <chrono>
 
 #include "PortFactory.h"
 #include "ISDevice.h"
@@ -28,7 +29,44 @@ public:
 
         ImxImu* imuWrapper = instance->owner;
 
+        /*
+        // P5 timing instrumentation.
+        using Clock = std::chrono::steady_clock;
+
+        static auto lastImu = Clock::now();
+        static auto lastIns = Clock::now();
+
+        static int imuCount = 0;
+        static int insCount = 0;
+        */
+
         if (data->hdr.id == DID_IMU) {
+
+            /*
+            auto now = Clock::now();
+
+            double dtMs =
+                std::chrono::duration<double, std::milli>(
+                    now - lastImu
+                ).count();
+
+            lastImu = now;
+
+            if (++imuCount % 100 == 0) {
+                printf(
+                    "[TIMING] DID_IMU dt = %.3f ms\n",
+                    dtMs
+                );
+            }
+
+            imuWrapper->imuTimestampNs =
+                std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    Clock::now().time_since_epoch()
+                ).count();
+
+            imuWrapper->imuSequence++;
+            */
+
             const imu_t& imu =
                 *reinterpret_cast<const imu_t*>(data->ptr);
 
@@ -42,6 +80,32 @@ public:
         }
 
         if (data->hdr.id == DID_INS_2) {
+
+            /*
+            auto now = Clock::now();
+
+            double dtMs =
+                std::chrono::duration<double, std::milli>(
+                    now - lastIns
+                ).count();
+
+            lastIns = now;
+
+            if (++insCount % 100 == 0) {
+                printf(
+                    "[TIMING] DID_INS_2 dt = %.3f ms\n",
+                    dtMs
+                );
+            }
+
+            imuWrapper->insTimestampNs =
+                std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    Clock::now().time_since_epoch()
+                ).count();
+
+            imuWrapper->insSequence++;
+            */
+
             const ins_2_t& ins =
                 *reinterpret_cast<const ins_2_t*>(data->ptr);
 
@@ -73,7 +137,9 @@ bool ImxImu::tryInit(const std::string& portName) {
         printf("[IMX IMU] Opening %s\n", portName.c_str());
 
         port_handle_t port =
-            SerialPortFactory::getInstance().bindPort(portName.c_str());
+            SerialPortFactory::getInstance().bindPort(
+                portName.c_str()
+            );
 
         _impl->imu = std::make_shared<ISDevice>(
             IS_HARDWARE_IMX_5_0,
@@ -96,13 +162,22 @@ bool ImxImu::tryInit(const std::string& portName) {
         Impl::instance = _impl.get();
 
         _impl->imu->StopBroadcasts(true);
-        _impl->imu->registerIsbDataHandler(Impl::dataHandler);
+        _impl->imu->registerIsbDataHandler(
+            Impl::dataHandler
+        );
 
         // Cheetah needs:
         // DID_IMU   -> gyro + acceleration
         // DID_INS_2 -> orientation quaternion
-        _impl->imu->BroadcastBinaryData(DID_IMU, 10);
-        _impl->imu->BroadcastBinaryData(DID_INS_2, 10);
+        _impl->imu->BroadcastBinaryData(
+            DID_IMU,
+            1
+        );
+
+        _impl->imu->BroadcastBinaryData(
+            DID_INS_2,
+            1
+        );
 
         printf("[IMX IMU] Streaming enabled\n");
 

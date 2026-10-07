@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+// #include <cstdint>
 
 #include "cppTypes.h"
 
@@ -22,6 +23,15 @@ public:
 
     // IMX/native convention: [w, x, y, z].
     Vec4<float> quat = Vec4<float>(1.f, 0.f, 0.f, 0.f);
+
+    /*
+    // P5 timing instrumentation.
+    uint64_t imuTimestampNs = 0;
+    uint64_t insTimestampNs = 0;
+
+    uint64_t imuSequence = 0;
+    uint64_t insSequence = 0;
+    */
 
 private:
     class Impl;

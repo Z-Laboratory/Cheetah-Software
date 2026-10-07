@@ -454,6 +454,12 @@ void Simulation::highLevelControl() {
     vn.quat[2] = _imxImu.quat[3];
     vn.quat[3] = _imxImu.quat[0];
 
+    //vn.imuTimestampNs = _imxImu.imuTimestampNs;
+    //vn.insTimestampNs = _imxImu.insTimestampNs;
+
+    //vn.imuSequence = _imxImu.imuSequence;
+    //vn.insSequence = _imxImu.insSequence;
+
   } else {
     // Fall back to simulated IMU if the physical IMX isn't connected.
     _imuSimulator->updateVectornav(_simulator->getState(),
